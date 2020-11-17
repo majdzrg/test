@@ -1,6 +1,12 @@
 import React, {useState} from 'react'
-
+import axios from "axios";
 export const Candidatur = () => {
+
+    const [message, setMessage] = useState({
+        type: 'error',
+        show : false,
+        message : ''
+    })
 
     const handleForm = (event) => {
         event.preventDefault();
@@ -9,17 +15,60 @@ export const Candidatur = () => {
             nom: nom.value,
             prenom : prenom.value,
             num_tel: num_tel.value,
-            exp: exp.value,
-            dispo: dispo.value,
-            cv: cv.value,
+            experience: exp.value,
+            disponabilite: dispo.value,
+            cv: cv.files[0],
             email: email.value,
             date_naissance: date_naissance.value
         }
-        console.log(data_obj)
+        //console.log(data_obj)
+        // request call
+        let formData = new FormData();
+        Object.keys(data_obj).forEach(key => formData.append(key, data_obj[key]))
+        console.log(formData)
+        axios.post("http://localhost:3300/api/candidat", formData,
+        {
+            headers: {
+            'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(response => {
+            console.log(response)
+            if(response.status == 200){
+                // show success
+                setMessage({
+                    show: true,
+                    message: "You are Registred :D ",
+                    type:"success"
+                })
+            }
+            else {
+                const message = response.data.message
+                // show error
+                setMessage({
+                    show: true,
+                    message: "Somthing went wrong, try later , "+message,
+                    type:"danger"
+                })
+            }
+        }, error => {
+            console.log(error)
+            setMessage({
+                show: true,
+                message: "Somthing went wrong, try later.",
+                type:"danger"
+            })
+        })
     }
+
+
     return(
         <div className="container p-2">
             <h1>Create a new candidatur</h1>
+            <button className="btn btn-secondary" href="/login">Switch to admin</button>
+            {message.show && <div className={"alert alert-"+message.type} role="alert">
+                {message.message}
+            </div>}
             <form onSubmit={handleForm}>
                 <div className="row">
                     <div className="col">
